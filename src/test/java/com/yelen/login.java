@@ -1,76 +1,76 @@
 package com.yelen;
 
-import java.awt.RenderingHints;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class login {
     private WebDriver driver;
 
-    public void setup(){
+    public void setup() {
         driver = new ChromeDriver();
     }
 
-    public void LoginSystem(String username, String password){
+    public void loginToSystem(String username, String password) {
         driver.get("https://yelenv2.dev02.ovh.smile.ci");
 
         try {
-            Thread.sleep(2000);
-            WebElement PopUp = driver.findElement(By.cssSelector("#ui-id-1"));
-            WebElement PopUpButton = driver.findElement(By.cssSelector("body > div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button"));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            
+            // Close popup if it appears
+            WebElement popUpButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(
+                "body > div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button"
+            )));
+            popUpButton.click();
+
+            // Input credentials
             WebElement inputUsername = driver.findElement(By.cssSelector("#edit-name"));
             WebElement inputPassword = driver.findElement(By.cssSelector("#edit-pass"));
-
-            if(PopUp.isDisplayed()){
-                PopUpButton.click();
-                inputUsername.sendKeys(username);
-                inputPassword.sendKeys(password);
-                inputPassword.sendKeys(Keys.RETURN);
-            }else{
-                inputUsername.sendKeys(username);
-                inputPassword.sendKeys(password);
-                inputPassword.sendKeys(Keys.RETURN);
-            }
+            inputUsername.sendKeys(username);
+            inputPassword.sendKeys(password);
+            inputPassword.sendKeys(Keys.RETURN);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("An error occurred during login: " + e.getMessage());
         }
     }
 
-    public void goodCredentials(){
-        LoginSystem("admin", "''ZX5tgqxq\"2pF#");
-        System.out.println("Login Successful with Good Credentials is ok");
-    }
-    public void badCredentials(){
-        LoginSystem("admin", "admin");
-        System.out.println("Can't open app bad credential ok");
-    }
-    public void missCredentials(){
-        LoginSystem("", "");
-        System.out.println("Can't open app bad credential ok");
+    public void testGoodCredentials() {
+        loginToSystem("admin", "''ZX5tgqxq\"2pF#");
+        System.out.println("Login successful with good credentials.");
     }
 
-    public void tearDown(){
-        if(driver != null){
+    public void testBadCredentials() {
+        loginToSystem("admin", "admin");
+        System.out.println("Login failed with bad credentials.");
+    }
+
+    public void testMissingCredentials() {
+        loginToSystem("", "");
+        System.out.println("Login failed with missing credentials.");
+    }
+
+    public void tearDown() {
+        if (driver != null) {
             driver.quit();
         }
     }
 
     public static void main(String[] args) {
-        
         login test = new login();
 
         try {
             test.setup();
-            test.missCredentials();
-            test.badCredentials();
-            test.goodCredentials();
+            test.testMissingCredentials();
+            test.testBadCredentials();
+            test.testGoodCredentials();
         } finally {
             test.tearDown();
         }
     }
-    
 }
